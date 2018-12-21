@@ -1,0 +1,194 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Metadata": {
+        "AWS::CloudFormation::Designer": {
+            "a203681c-3dde-4675-a393-971dd88af8b6": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": -3300,
+                    "y": 40
+                },
+                "z": 0,
+                "embeds": []
+            },
+            "5bd2fea7-7900-4a12-83c2-b7eaead2cf18": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": -3300,
+                    "y": -50
+                },
+                "z": 0,
+                "embeds": [],
+                "dependson": [
+                    "a203681c-3dde-4675-a393-971dd88af8b6"
+                ]
+            }
+        }
+    },
+    "Resources": {
+        "FrontEnd": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            {
+                                "Ref": "appName"
+                            },
+                            ".",
+                            {
+                                "Ref": "domainName"
+                            }
+                        ]
+                    ]
+                },
+                "AccessControl": "PublicRead",
+                "WebsiteConfiguration": {
+                    "IndexDocument": "index.html",
+                    "ErrorDocument": "index.html"
+                }
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "a203681c-3dde-4675-a393-971dd88af8b6"
+                }
+            }
+        },
+        "CF": {
+            "Type": "AWS::CloudFront::Distribution",
+            "Properties": {
+                "DistributionConfig": {
+                    "Aliases": [
+                        {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    {
+                                        "Ref": "appName"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "domainName"
+                                    }
+                                ]
+                            ]
+                        }
+                    ],
+                    "DefaultRootObject": "index.html",
+                    "Enabled": true,
+                    "HttpVersion": "http2",
+                    "PriceClass": "PriceClass_All",
+                    "DefaultCacheBehavior": {
+                        "AllowedMethods": [
+                            "GET",
+                            "HEAD"
+                        ],
+                        "ViewerProtocolPolicy": "redirect-to-https",
+                        "DefaultTTL": 10,
+                        "MaxTTL": 10,
+                        "MinTTL": 10,
+                        "TargetOriginId": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "S3-Website-",
+                                    {
+                                        "Ref": "appName"
+                                    },
+                                    ".",
+                                    {
+                                        "Ref": "domainName"
+                                    },
+                                    ".s3-website-eu-west-1.amazonaws.com"
+                                ]
+                            ]
+                        },
+                        "ForwardedValues": {
+                            "Cookies": {
+                                "Forward": "none"
+                            },
+                            "QueryString": true
+                        }
+                    },
+                    "ViewerCertificate": {
+                        "SslSupportMethod": "sni-only",
+                        "AcmCertificateArn": {
+                            "Ref": "AcmCertificateArn"
+                        }
+                    },
+                    "Origins": [
+                        {
+                            "DomainName": {
+                                "Fn::Join": [
+                                    "",
+                                    [
+                                        {
+                                            "Ref": "appName"
+                                        },
+                                        ".",
+                                        {
+                                            "Ref": "domainName"
+                                        },
+                                        ".s3-website-eu-west-1.amazonaws.com"
+                                    ]
+                                ]
+                            },
+                            "CustomOriginConfig": {
+                                "HTTPPort": "80",
+                                "HTTPSPort": "443",
+                                "OriginProtocolPolicy": "http-only"
+                            },
+                            "Id": {
+                                "Fn::Join": [
+                                    "",
+                                    [
+                                        "S3-Website-",
+                                        {
+                                            "Ref": "appName"
+                                        },
+                                        ".",
+                                        {
+                                            "Ref": "domainName"
+                                        },
+                                        ".s3-website-eu-west-1.amazonaws.com"
+                                    ]
+                                ]
+                            }
+                        }
+                    ]
+                }
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "5bd2fea7-7900-4a12-83c2-b7eaead2cf18"
+                }
+            },
+            "DependsOn": [
+                "FrontEnd"
+            ]
+        }
+    },
+    "Parameters": {
+        "domainName": {
+            "Type": "String",
+            "Description": "Domain name"
+        },
+        "appName": {
+            "Type": "String",
+            "Description": "Please write name of subdomain e.g app-dev or app-stating",
+            "ConstraintDescription": "App Name"
+        },
+        "AcmCertificateArn": {
+            "Type": "String",
+            "Description": "Amazon Resource Name (ARN) of an AWS Certificate Manager (ACM) certificate. Certificate must be uploaded to N.Virginia",
+            "ConstraintDescription": "Certification id"
+        }
+    }
+}
